@@ -46,6 +46,9 @@ class Python(AutotoolsPackage):
     list_url = "https://www.python.org/downloads/"
     list_depth = 1
 
+    version('3.7.0b2', '1d49b3460cc1ac80ade91114eae53c61')
+    version('3.6.5rc1', '817816b8f2f11e894e97ea17575187e3')
+    version('3.6.4', '9de6494314ea199e3633211696735f65', preferred=True)
     version('3.6.3', 'e9180c69ed9a878a4a8a3ab221e32fa9')
     version('3.6.2', 'e1a36bfffdd1d3a780b1825daf16e56c')
     version('3.6.1', '2d0fc9f3a5940707590e07f03ecb08b9')
@@ -57,7 +60,7 @@ class Python(AutotoolsPackage):
     version('3.3.6', 'cdb3cd08f96f074b3f3994ccb51063e9')
     version('3.2.6', '23815d82ae706e9b781ca65865353d39')
     version('3.1.5', '02196d3fc7bc76bdda68aa36b0dd16ab')
-    version('2.7.14', 'cee2e4b33ad3750da77b2e85f2f8b724', preferred=True)
+    version('2.7.14', 'cee2e4b33ad3750da77b2e85f2f8b724')
     version('2.7.13', '17add4bf0ad0ec2f08e0cae6d205c700')
     version('2.7.12', '88d61f82e3616a4be952828b3694109d')
     version('2.7.11', '6b6076ec9e93f05dd63e47eb9c15728b')
