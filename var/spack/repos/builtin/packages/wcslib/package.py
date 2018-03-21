@@ -25,24 +25,11 @@
 from spack import *
 
 
-class LibjpegTurbo(AutotoolsPackage):
-    """libjpeg-turbo is a fork of the original IJG libjpeg which uses SIMD to
-       accelerate baseline JPEG compression and decompression. libjpeg is a
-       library that implements JPEG image encoding, decoding and
-       transcoding."""
+class Wcslib(AutotoolsPackage):
+    """WCSLIB a C implementation of the coordinate transformations
+    defined in the FITS WCS papers."""
 
-    homepage = "http://libjpeg-turbo.virtualgl.org"
-    url      = "https://sourceforge.net/projects/libjpeg-turbo/files/1.5.3/libjpeg-turbo-1.5.3.tar.gz"
+    homepage = "http://www.atnf.csiro.au/people/mcalabre/WCS/"
+    url      = "ftp://ftp.atnf.csiro.au/pub/software/wcslib/wcslib.tar.bz2"
 
-    version('1.5.3', '7c82f0f6a3130ec06b8a4d0b321cbca3')
-    version('1.5.0', '3fc5d9b6a8bce96161659ae7a9939257')
-    version('1.3.1', '2c3a68129dac443a72815ff5bb374b05')
-
-    provides('jpeg')
-
-    # Can use either of these. But in the current version of the package
-    # only nasm is used. In order to use yasm an environmental variable
-    # NASM must be set.
-    # TODO: Implement the selection between two supported assemblers.
-    # depends_on("yasm", type='build')
-    depends_on("nasm", type='build')
+    version('5.18', '67a78354be74eca4f17d3e0853d5685f')
