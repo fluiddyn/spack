@@ -1,28 +1,10 @@
-##############################################################################
-# Copyright (c) 2013-2017, Lawrence Livermore National Security, LLC.
-# Produced at the Lawrence Livermore National Laboratory.
+# Copyright 2013-2018 Lawrence Livermore National Security, LLC and other
+# Spack Project Developers. See the top-level COPYRIGHT file for details.
 #
-# This file is part of Spack.
-# Created by Todd Gamblin, tgamblin@llnl.gov, All rights reserved.
-# LLNL-CODE-647188
-#
-# For details, see https://github.com/spack/spack
-# Please also see the NOTICE and LICENSE files for our notice and the LGPL.
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License (as
-# published by the Free Software Foundation) version 2.1, February 1999.
-#
-# This program is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms and
-# conditions of the GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public
-# License along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-##############################################################################
+# SPDX-License-Identifier: (Apache-2.0 OR MIT)
+
 import collections
+import contextlib
 import inspect
 import json
 import os
@@ -30,6 +12,9 @@ import re
 import sys
 import os.path
 import subprocess
+
+import llnl.util.tty as tty
+
 from llnl.util.lang import dedupe
 
 
@@ -598,3 +583,41 @@ def inspect_path(root, inspections, exclude=None):
                 env.prepend_path(variable, expected)
 
     return env
+
+
+@contextlib.contextmanager
+def preserve_environment(*variables):
+    """Ensures that the value of the environment variables passed as
+    arguments is the same before entering to the context manager and after
+    exiting it.
+
+    Variables that are unset before entering the context manager will be
+    explicitly unset on exit.
+
+    Args:
+        variables (list of str): list of environment variables to be preserved
+    """
+    cache = {}
+    for var in variables:
+        # The environment variable to be preserved might not be there.
+        # In that case store None as a placeholder.
+        cache[var] = os.environ.get(var, None)
+
+    yield
+
+    for var in variables:
+        value = cache[var]
+        msg = '[PRESERVE_ENVIRONMENT]'
+        if value is not None:
+            # Print a debug statement if the value changed
+            if var not in os.environ:
+                msg += ' {0} was unset, will be reset to "{1}"'
+                tty.debug(msg.format(var, value))
+            elif os.environ[var] != value:
+                msg += ' {0} was set to "{1}", will be reset to "{2}"'
+                tty.debug(msg.format(var, os.environ[var], value))
+            os.environ[var] = value
+        elif var in os.environ:
+            msg += ' {0} was set to "{1}", will be unset'
+            tty.debug(msg.format(var, os.environ[var]))
+            del os.environ[var]

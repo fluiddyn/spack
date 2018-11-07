@@ -1,31 +1,13 @@
-##############################################################################
-# Copyright (c) 2013-2017, Lawrence Livermore National Security, LLC.
-# Produced at the Lawrence Livermore National Laboratory.
+# Copyright 2013-2018 Lawrence Livermore National Security, LLC and other
+# Spack Project Developers. See the top-level COPYRIGHT file for details.
 #
-# This file is part of Spack.
-# Created by Todd Gamblin, tgamblin@llnl.gov, All rights reserved.
-# LLNL-CODE-647188
-#
-# For details, see https://github.com/spack/spack
-# Please also see the NOTICE and LICENSE files for our notice and the LGPL.
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License (as
-# published by the Free Software Foundation) version 2.1, February 1999.
-#
-# This program is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the IMPLIED WARRANTY OF
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the terms and
-# conditions of the GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public
-# License along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-##############################################################################
+# SPDX-License-Identifier: (Apache-2.0 OR MIT)
+
 
 import argparse
 
 import spack.cmd
+import spack.config
 import spack.modules
 import spack.spec
 import spack.store
@@ -52,7 +34,7 @@ def add_common_arguments(parser, list_of_arguments):
 
 
 class ConstraintAction(argparse.Action):
-    """Constructs a list of specs based on a constraint given on the command line
+    """Constructs a list of specs based on constraints from the command line
 
     An instance of this class is supposed to be used as an argument action
     in a parser. It will read a constraint and will attach a function to the
@@ -82,32 +64,9 @@ class ConstraintAction(argparse.Action):
         return sorted(specs)
 
 
-class CleanOrDirtyAction(argparse.Action):
-    """Sets the dirty flag in the current namespace"""
-
-    def __init__(self, *args, **kwargs):
-        kwargs['default'] = spack.dirty
-        super(CleanOrDirtyAction, self).__init__(*args, **kwargs)
-
-    def __call__(self, parser, namespace, values, option_string=None):
-        if option_string == '--clean':
-            setattr(namespace, self.dest, False)
-        elif option_string == '--dirty':
-            setattr(namespace, self.dest, True)
-        else:
-            msg = 'expected "--dirty" or "--clean" [got {0} instead]'
-            raise argparse.ArgumentError(msg.format(option_string))
-
-
 _arguments['constraint'] = Args(
     'constraint', nargs=argparse.REMAINDER, action=ConstraintAction,
     help='constraint to select a subset of installed packages')
-
-_arguments['module_type'] = Args(
-    '-m', '--module-type',
-    choices=spack.modules.module_types.keys(),
-    action='append',
-    help='type of module file. More than one choice is allowed [default: tcl]')  # NOQA: ignore=E501
 
 _arguments['yes_to_all'] = Args(
     '-y', '--yes-to-all', action='store_true', dest='yes_to_all',
@@ -119,20 +78,17 @@ _arguments['recurse_dependencies'] = Args(
 
 _arguments['clean'] = Args(
     '--clean',
-    action=CleanOrDirtyAction,
+    action='store_false',
+    default=spack.config.get('config:dirty'),
     dest='dirty',
-    help='sanitize the environment from variables that can affect how ' +
-         ' packages find libraries or headers',
-    nargs=0
-)
+    help='unset harmful variables in the build environment (default)')
 
 _arguments['dirty'] = Args(
     '--dirty',
-    action=CleanOrDirtyAction,
+    action='store_true',
+    default=spack.config.get('config:dirty'),
     dest='dirty',
-    help='maintain the current environment without trying to sanitize it',
-    nargs=0
-)
+    help='preserve user environment in the spack build environment (danger!)')
 
 _arguments['long'] = Args(
     '-l', '--long', action='store_true',
@@ -142,6 +98,14 @@ _arguments['very_long'] = Args(
     '-L', '--very-long', action='store_true',
     help='show full dependency hashes as well as versions')
 
+_arguments['jobs'] = Args(
+    '-j', '--jobs', action='store', type=int, dest='jobs',
+    help="explicitely set number of make jobs. default is #cpus")
+
 _arguments['tags'] = Args(
     '-t', '--tags', action='append',
     help='filter a package query by tags')
+
+_arguments['no_checksum'] = Args(
+    '-n', '--no-checksum', action='store_true', default=False,
+    help="do not use checksums to verify downloadeded files (unsafe)")
